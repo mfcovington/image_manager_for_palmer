@@ -19,12 +19,14 @@ my $dawn      = 8;
 my $daylength = 16;
 my $img_dir   = "./";
 my $log_dir   = "./";
+my $irods_dir = "/iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/";
 my $no_log;
 my $options = GetOptions(
     "dawn=i"      => \$dawn,
     "daylength=i" => \$daylength,
     "img_dir=s"   => \$img_dir,
     "log_dir=s"   => \$log_dir,
+    "irods_dir=s" => \$irods_dir,
     "no_log"      => \$no_log,
 );
 my $autotransfer_dir = $img_dir . "/auto_transfer/";
@@ -91,7 +93,7 @@ sub is_light {
 sub upload_to_iplant {
     for my $image_name (@_) {
         next unless $image_name =~ m/organized/;
-        system("icd /iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/");
+        system("icd $irods_dir");
         system("iput -T $image_name");
         say $log_fh "  iput -T $image_name" unless $no_log;
     }
