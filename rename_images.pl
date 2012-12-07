@@ -15,19 +15,21 @@ use File::Path 'make_path';
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
 
-my $dawn      = 8;
-my $daylength = 16;
-my $img_dir   = "./";
-my $log_dir   = "./";
-my $irods_dir = "/iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/";
+my $dawn          = 8;
+my $daylength     = 16;
+my $mEV_threshold = 0;
+my $img_dir       = "./";
+my $log_dir       = "./";
+my $irods_dir     = "/iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/";
 my $no_log;
 my $options = GetOptions(
-    "dawn=i"      => \$dawn,
-    "daylength=i" => \$daylength,
-    "img_dir=s"   => \$img_dir,
-    "log_dir=s"   => \$log_dir,
-    "irods_dir=s" => \$irods_dir,
-    "no_log"      => \$no_log,
+    "dawn=i"          => \$dawn,
+    "daylength=i"     => \$daylength,
+    "mEV_threshold=i" => \$mEV_threshold,
+    "img_dir=s"       => \$img_dir,
+    "log_dir=s"       => \$log_dir,
+    "irods_dir=s"     => \$irods_dir,
+    "no_log"          => \$no_log,
 );
 my $autotransfer_dir = $img_dir . "/auto_transfer/";
 my $organized_dir    = $img_dir . "/organized/";
@@ -87,7 +89,7 @@ sub is_day {
 }
 
 sub is_light {
-    return 1 if shift > 0;
+    return 1 if shift > $mEV_threshold;
 }
 
 sub upload_to_iplant {
