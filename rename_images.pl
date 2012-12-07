@@ -21,6 +21,7 @@ my $mEV_threshold = 0;
 my $img_dir       = "./";
 my $log_dir       = "./";
 my $irods_dir     = "/iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/";
+my $img_type      = "CR2";
 my $no_log;
 my $options = GetOptions(
     "dawn=i"          => \$dawn,
@@ -29,6 +30,7 @@ my $options = GetOptions(
     "img_dir=s"       => \$img_dir,
     "log_dir=s"       => \$log_dir,
     "irods_dir=s"     => \$irods_dir,
+    "img_type=s"      => \$img_type,
     "no_log"          => \$no_log,
 );
 my $autotransfer_dir = $img_dir . "/auto_transfer/";
@@ -41,7 +43,7 @@ open my $log_fh, ">>", "$log_dir/image_transfer.log" unless $no_log;
 say $log_fh "STARTING - " . localtime() unless $no_log;
 
 my @images;
-find( sub { push @images, $File::Find::name if /IMG_\d*\.CR2$/ },
+find( sub { push @images, $File::Find::name if /\.$img_type$/ },
     $autotransfer_dir );
 
 my @renamed_images = rename_images(@images);
