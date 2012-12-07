@@ -70,7 +70,7 @@ sub rename_images {
         my $new_path = $out_dir . $image_name_new;
         move( $image_name, $new_path );
         push @new_names, $new_path;
-        say $log_fh join "\t", "mv", $image_name, $new_path unless $no_log;
+        say $log_fh "  mv $image_name $new_path" unless $no_log;
     }
     return @new_names;
 }
@@ -89,7 +89,12 @@ sub is_light {
 }
 
 sub upload_to_iplant {
-    # body...
+    for my $image_name (@_) {
+        next unless $image_name =~ m/organized/;
+        system("icd /iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/");
+        system("iput -T $image_name");
+        say $log_fh "  iput -T $image_name" unless $no_log;
+    }
 }
 
 exit;
