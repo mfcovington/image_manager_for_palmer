@@ -15,35 +15,35 @@ use File::Path 'make_path';
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
 
-my $dawn          = 8;
-my $daylength     = 16;
-my $mEV_threshold = 0;
-my $img_dir       = "./";
-my $log_dir       = "./";
-my $irods_dir     = "/iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/";
-my $img_type      = "CR2";
+my $dawn             = 8;
+my $daylength        = 16;
+my $mEV_threshold    = 0;
+my $autotransfer_dir = "./auto_transfer/";
+my $log_dir          = "./";
+my $irods_dir        = "/iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/";
+my $format           = "CR2";
 my $no_log;
 my $options = GetOptions(
-    "dawn=i"          => \$dawn,
-    "daylength=i"     => \$daylength,
-    "mEV_threshold=i" => \$mEV_threshold,
-    "img_dir=s"       => \$img_dir,
-    "log_dir=s"       => \$log_dir,
-    "irods_dir=s"     => \$irods_dir,
-    "img_type=s"      => \$img_type,
-    "no_log"          => \$no_log,
+    "dawn=i"             => \$dawn,
+    "daylength=i"        => \$daylength,
+    "mEV_threshold=i"    => \$mEV_threshold,
+    "autotransfer_dir=s" => \$autotransfer_dir,
+    "log_dir=s"          => \$log_dir,
+    "irods_dir=s"        => \$irods_dir,
+    "format=s"           => \$format,
+    "no_log"             => \$no_log,
 );
-my $autotransfer_dir = $img_dir . "/auto_transfer/";
-my $organized_dir    = $img_dir . "/organized/";
-my $night_dir        = $img_dir . "/night/";
-my $conflict_dir     = $img_dir . "/conflict/";
+my ( $base_dir ) = $autotransfer_dir =~ / (.*\/) [^\/]+ /x;
+my $organized_dir    = $base_dir . "organized/";
+my $night_dir        = $base_dir . "night/";
+my $conflict_dir     = $base_dir . "conflict/";
 make_path( $organized_dir, $night_dir, $conflict_dir );
 
 open my $log_fh, ">>", "$log_dir/image_transfer.log" unless $no_log;
 say $log_fh "STARTING - " . localtime() unless $no_log;
 
 my @images;
-find( sub { push @images, $File::Find::name if /\.$img_type$/ },
+find( sub { push @images, $File::Find::name if /\.$format$/ },
     $autotransfer_dir );
 
 my @renamed_images = rename_images(@images);
