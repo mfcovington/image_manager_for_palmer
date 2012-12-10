@@ -7,8 +7,6 @@
 #
 use strict;
 use warnings;
-use autodie;
-use feature 'say';
 use Data::Printer;
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
