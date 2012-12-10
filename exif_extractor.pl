@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# exif_extractor.pl.pl
+# exif_extractor.pl
 # Mike Covington
 # created: 2012-11-05
 #
@@ -11,14 +11,43 @@ use autodie;
 use feature 'say';
 use Data::Printer;
 use Image::ExifTool qw(:Public);
+use Getopt::Long;
 
-my $image_name = $ARGV[0] || die "no image specified\nUSAGE: $0 image_name.format\n";
+my ( $image, $all, $help );
+my $options = GetOptions(
+    "image=s" => \$image,
+    "all"     => \$all,
+    "help"    => \$help,
+);
 
-# in case Palmer wants to extract a subset:
-# my $info_subset = ImageInfo($image_name, 'OwnerName', 'CreateDate', 'WB_RGGBLevels', 'ColorTempAsShot', 'FileType', 'Directory');
-# p $info_subset;
+my $usage = <<USAGE_END;
 
-my $info_all = ImageInfo($image_name);
-p $info_all;
+USAGE:
+$0
+  --image    Image name
+  --all      Extract all Metadata
+               by default, extracts:
+                 * CreateDate
+                 * Directory
+                 * FileName
+                 * FileNumber
+                 * MeasuredEV
+                 * OwnerName
+  --help
+
+USAGE_END
+
+die "**NO IMAGE SPECIFIED**\n" . $usage unless $image;
+die $usage if $help;
+
+if ($all) {
+    p ImageInfo($image);
+}
+else {
+    p ImageInfo(
+        $image,       'CreateDate', 'Directory', 'FileName',
+        'FileNumber', 'MeasuredEV', 'OwnerName'
+    );
+}
 
 exit;
