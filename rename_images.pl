@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# FILE_NAME.pl
+# rename_images.pl
 # Mike Covington
 # created: 2012-12-06
 #
@@ -15,12 +15,12 @@ use File::Path 'make_path';
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
 
-my $dawn             = 8;
+my $dawn             = 6;
 my $daylength        = 16;
 my $mEV_threshold    = 0;
-my $autotransfer_dir = "./auto_transfer/";
-my $log_dir          = "./";
-my $irods_dir        = "/iplant/home/shared/ucd.plantbio/maloof.lab/members/mike/";
+my $autotransfer_dir = "/Users/palmer/Desktop/image_manager_for_palmer/auto_transfer/";
+my $log_dir          = "/Users/palmer/Desktop/image_manager_for_palmer/";
+my $irods_dir        = "/iplant/home/shared/ucd.brassica/raw.data/NAM_images/";
 my $format           = "CR2";
 my $no_log;
 my $options = GetOptions(
