@@ -58,7 +58,7 @@ say $log_fh "FINISHED - " . localtime() unless $no_log;
 sub timestamp_for_irods_dir {
     my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
       localtime();
-    return join ".", $year + 1900 . $mon . $mday, $hour . $min . $sec;
+    return join ".", $year + 1900 . $mon + 1 . $mday, $hour . $min . $sec;
 }
 
 sub rename_images {
