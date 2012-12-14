@@ -15,9 +15,11 @@ use File::Path 'make_path';
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
 
+# Add help/usage statement
+
 my $dawn             = 6;
 my $daylength        = 16;
-my $mEV_threshold    = 0;
+my $mEV_threshold    = 7;
 my $autotransfer_dir = "/Users/palmer/Desktop/image_manager_for_palmer/auto_transfer/";
 my $log_dir          = "/Users/palmer/Desktop/image_manager_for_palmer/";
 my $irods_dir        = "/iplant/home/shared/ucd.brassica/raw.data/NAM_images/";
@@ -47,9 +49,17 @@ find( sub { push @images, $File::Find::name if /\.$format$/ },
     $autotransfer_dir );
 
 my @renamed_images = rename_images(@images);
+
+$irods_dir = join "/", $irods_dir, timestamp_for_irods_dir();
 upload_to_iplant(@renamed_images);
 
 say $log_fh "FINISHED - " . localtime() unless $no_log;
+
+sub timestamp_for_irods_dir {
+    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
+      localtime();
+    return join ".", $year + 1900 . $mon . $mday, $hour . $min . $sec;
+}
 
 sub rename_images {
     my @new_names;
