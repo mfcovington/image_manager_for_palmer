@@ -14,6 +14,7 @@ use File::Copy;
 use File::Path 'make_path';
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
+use POSIX 'strftime';
 
 # Add help/usage statement
 
@@ -35,12 +36,14 @@ my $options = GetOptions(
     "format=s"           => \$format,
     "no_log"             => \$no_log,
 );
-my ( $base_dir ) = $autotransfer_dir =~ / (.*\/) [^\/]+ /x;
-my $organized_dir    = $base_dir . "organized/";
-my $night_dir        = $base_dir . "night/";
-my $conflict_dir     = $base_dir . "conflict/";
-make_path( $organized_dir, $night_dir, $conflict_dir );
+my ($base_dir) = $autotransfer_dir =~ / (.*\/) [^\/]+ /x;
+my $now = timestamp_for_dir();
+my $organized_dir = $base_dir . "organized/$now/";
+my $night_dir     = $base_dir . "night/$now/";
+my $conflict_dir  = $base_dir . "conflict/$now/";
+$irods_dir .= "/$now/";
 
+make_path($log_dir);
 open my $log_fh, ">>", "$log_dir/image_transfer.log" unless $no_log;
 say $log_fh "STARTING - " . localtime() unless $no_log;
 
@@ -49,20 +52,17 @@ find( sub { push @images, $File::Find::name if /\.$format$/ },
     $autotransfer_dir );
 
 my @renamed_images = rename_images(@images);
-
-$irods_dir = join "/", $irods_dir, timestamp_for_irods_dir();
 upload_to_iplant(@renamed_images);
 
 say $log_fh "FINISHED - " . localtime() unless $no_log;
 
-sub timestamp_for_irods_dir {
-    my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst ) =
-      localtime();
-    return join ".", $year + 1900 . $mon + 1 . $mday, $hour . $min . $sec;
+sub timestamp_for_dir {
+    return strftime "%Y%m%d.%H%M%S", localtime;
 }
 
 sub rename_images {
     my @new_names;
+    make_path( $organized_dir, $night_dir, $conflict_dir ) if scalar @_ > 0;
     for my $image_name (@_) {
         my $info_subset = ImageInfo(
             $image_name, 'OwnerName', 'CreateDate', 'MeasuredEV',
