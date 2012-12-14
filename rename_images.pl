@@ -105,11 +105,14 @@ sub is_light {
 }
 
 sub upload_to_iplant {
-    for my $image_name (@_) {
-        next unless $image_name =~ m/organized/;
-        system("icd $irods_dir");
-        system("iput -T $image_name");
-        say $log_fh "  iput -T $image_name" unless $no_log;
+    if ( scalar @_ > 0 ) {
+        system("imkdir $irods_dir");
+        for my $image_name (@_) {
+            next unless $image_name =~ m/organized/;
+            system("icd $irods_dir");
+            system("iput -T $image_name");
+            say $log_fh "  iput -T $image_name" unless $no_log;
+        }
     }
 }
 
