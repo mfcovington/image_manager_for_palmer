@@ -36,7 +36,7 @@ my $options = GetOptions(
     "format=s"           => \$format,
     "no_log"             => \$no_log,
 );
-my ($base_dir) = $autotransfer_dir =~ / (.*\/) [^\/]+ /x;
+my ($base_dir) = $autotransfer_dir =~ / (.*\/) [^\/]+ /x || "";
 my $now = timestamp_for_dir();
 my $organized_dir = $base_dir . "organized/$now/";
 my $night_dir     = $base_dir . "night/$now/";
