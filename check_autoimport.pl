@@ -20,7 +20,7 @@ use Data::Printer;
 # - Display results in a better way
 
 my $autotransfer_dir =
-  "/Users/palmer/Desktop/image_manager_for_palmer/auto_transfer/";
+  "/Volumes/Humperdink/auto_transfer/";
 my $format  = "CR2";
 my $options = GetOptions(
     "autotransfer_dir=s" => \$autotransfer_dir,
