@@ -15,8 +15,6 @@ use File::Path 'make_path';
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
 
-# Add help/usage statement
-
 my $dawn             = 6;
 my $daylength        = 16;
 my $mEV_threshold    = 7;
@@ -24,6 +22,7 @@ my $autotransfer_dir = "/Volumes/Humperdink/auto_transfer/";
 my $log_dir          = "/Volumes/Humperdink/";
 my $irods_dir        = "/iplant/home/shared/ucd.brassica/raw.data/NAM_images/";
 my $format           = "CR2";
+my $help;
 my $options = GetOptions(
     "dawn=i"             => \$dawn,
     "daylength=i"        => \$daylength,
@@ -32,7 +31,29 @@ my $options = GetOptions(
     "log_dir=s"          => \$log_dir,
     "irods_dir=s"        => \$irods_dir,
     "format=s"           => \$format,
+    "help"               => \$help,
 );
+
+my $usage = <<EOF;
+
+    USAGE:
+    $0
+        --dawn              Time of lights-on [$dawn]
+        --daylength         Daylength in hours [$daylength]
+        --mEV_threshold     Threshold for blank/black images [$mEV_threshold]
+        --autotransfer_dir  Directory containing inages transfered from camera
+                              [$autotransfer_dir]
+        --log_dir           Directory to write the log file
+                              [$log_dir]
+        --irods_dir         Remote iRODS directory for syncing images
+                              [$irods_dir]
+        --format            Image file format [$format]
+        --help
+
+EOF
+
+die $usage if $help;
+
 $autotransfer_dir =~ / (.*\/) [^\/]+ /x;
 my $base_dir = $1 || "";
 my $organized_dir = $base_dir . "organized/";
