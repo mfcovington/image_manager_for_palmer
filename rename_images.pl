@@ -55,7 +55,7 @@ EOF
 die $usage if $help;
 
 $autotransfer_dir =~ / (.*\/) [^\/]+ /x;
-my $base_dir = $1 || "";
+my $base_dir      = $1 || "";
 my $organized_dir = $base_dir . "organized/";
 my $night_dir     = $base_dir . "night/";
 my $conflict_dir  = $base_dir . "conflict/";
@@ -110,10 +110,11 @@ sub rename_images {
 sub is_day {
     my ( $hh, $mm ) = split /:/, shift;
     my $hour = $hh + $mm / 60;
+    my $dusk = $dawn + $daylength;
     return 1
-      if ( $dawn + $daylength <= 24 && $hour > $dawn && $hour < $dawn + $daylength )
-      || ( $dawn + $daylength > 24 && $hour > $dawn )
-      || ( $dawn + $daylength > 24 && $hour < $dawn + $daylength - 24 );
+      if ( $dusk <= 24 && $hour > $dawn && $hour < $dusk )
+      || ( $dusk  > 24 && $hour > $dawn )
+      || ( $dusk  > 24 && $hour < $dusk - 24 );
 }
 
 sub is_light {
