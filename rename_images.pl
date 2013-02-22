@@ -14,9 +14,6 @@ use File::Copy;
 use File::Path 'make_path';
 use Image::ExifTool qw(:Public);
 use Getopt::Long;
-use POSIX 'strftime';
-
-# Add help/usage statement
 
 my $dawn             = 6;
 my $daylength        = 16;
@@ -25,7 +22,7 @@ my $autotransfer_dir = "/Volumes/Humperdink/auto_transfer/";
 my $log_dir          = "/Volumes/Humperdink/";
 my $irods_dir        = "/iplant/home/shared/ucd.brassica/raw.data/NAM_images/";
 my $format           = "CR2";
-my $no_log;
+my $help;
 my $options = GetOptions(
     "dawn=i"             => \$dawn,
     "daylength=i"        => \$daylength,
@@ -34,36 +31,53 @@ my $options = GetOptions(
     "log_dir=s"          => \$log_dir,
     "irods_dir=s"        => \$irods_dir,
     "format=s"           => \$format,
-    "no_log"             => \$no_log,
+    "help"               => \$help,
 );
+
+my $usage = <<EOF;
+
+    USAGE:
+    $0
+        --dawn              Time of lights-on [$dawn]
+        --daylength         Daylength in hours [$daylength]
+        --mEV_threshold     Threshold for blank/black images [$mEV_threshold]
+        --autotransfer_dir  Directory containing inages transfered from camera
+                              [$autotransfer_dir]
+        --log_dir           Directory to write the log file
+                              [$log_dir]
+        --irods_dir         Remote iRODS directory for syncing images
+                              [$irods_dir]
+        --format            Image file format [$format]
+        --help
+
+EOF
+
+die $usage if $help;
+
 $autotransfer_dir =~ / (.*\/) [^\/]+ /x;
-my $base_dir = $1 || "";
-my $now = timestamp_for_dir();
-my $organized_dir = $base_dir . "organized/$now/";
-my $night_dir     = $base_dir . "night/$now/";
-my $conflict_dir  = $base_dir . "conflict/$now/";
-$irods_dir .= "/$now/";
+my $base_dir      = $1 || "";
+my $organized_dir = $base_dir . "organized/";
+my $night_dir     = $base_dir . "night/";
+my $conflict_dir  = $base_dir . "conflict/";
 
 make_path($log_dir);
-open my $log_fh, ">>", "$log_dir/image_transfer.log" unless $no_log;
-say $log_fh "STARTING - " . localtime() unless $no_log;
+open my $log_fh, ">>", "$log_dir/image_transfer.log";
+say $log_fh "▼ STARTING - " . localtime();
 
+$format =~ s|^\.+||;
 my @images;
 find( sub { push @images, $File::Find::name if /\.$format$/ },
     $autotransfer_dir );
 
-my @renamed_images = rename_images(@images);
-upload_to_iplant(@renamed_images);
-
-say $log_fh "FINISHED - " . localtime() unless $no_log;
-
-sub timestamp_for_dir {
-    return strftime "%Y%m%d.%H%M%S", localtime;
+if ( scalar @images > 0 ) {
+    rename_images(@images);
+    upload_to_iplant();
 }
 
+say $log_fh "- FINISHED - " . localtime();
+close $log_fh;
+
 sub rename_images {
-    my @new_names;
-    make_path( $organized_dir, $night_dir, $conflict_dir ) if scalar @_ > 0;
     for my $image_name (@_) {
         my $info_subset = ImageInfo(
             $image_name, 'OwnerName', 'CreateDate', 'MeasuredEV',
@@ -73,10 +87,6 @@ sub rename_images {
         my ( $date, $time ) = split / /, $info_subset->{'CreateDate'};
         my $day   = is_day($time);
         my $light = is_light( $info_subset->{'MeasuredEV'} );
-        my $out_dir;
-        if    ( $day  && $light )  { $out_dir = $organized_dir }
-        elsif ( !$day && !$light ) { $out_dir = $night_dir }
-        else                       { $out_dir = $conflict_dir }
 
         $date =~ s/://g;
         $time =~ s/://g;
@@ -84,21 +94,27 @@ sub rename_images {
         my $format         = $info_subset->{'FileType'};
         my $image_name_new = join ".", $date, $time, $camera_name, $format;
 
+        my $out_dir;
+        if    ( $day  && $light )  { $out_dir = $organized_dir }
+        elsif ( !$day && !$light ) { $out_dir = $night_dir }
+        else                       { $out_dir = $conflict_dir }
+        $out_dir .= "$date/";
+        make_path($out_dir);
+
         my $new_path = $out_dir . $image_name_new;
-        move( $image_name, $new_path );
-        push @new_names, $new_path;
-        say $log_fh "  mv $image_name $new_path" unless $no_log;
+        move( $image_name, $new_path )
+          and ( say $log_fh "  mv $image_name $new_path" );
     }
-    return @new_names;
 }
 
 sub is_day {
     my ( $hh, $mm ) = split /:/, shift;
     my $hour = $hh + $mm / 60;
+    my $dusk = $dawn + $daylength;
     return 1
-      if ( $dawn + $daylength <= 24 && $hour > $dawn && $hour < $dawn + $daylength )
-      || ( $dawn + $daylength > 24 && $hour > $dawn )
-      || ( $dawn + $daylength > 24 && $hour < $dawn + $daylength - 24 );
+      if ( $dusk <= 24 && $hour > $dawn && $hour < $dusk )
+      || ( $dusk  > 24 && $hour > $dawn )
+      || ( $dusk  > 24 && $hour < $dusk - 24 );
 }
 
 sub is_light {
@@ -106,15 +122,10 @@ sub is_light {
 }
 
 sub upload_to_iplant {
-    if ( scalar @_ > 0 ) {
-        system("imkdir $irods_dir");
-        for my $image_name (@_) {
-            next unless $image_name =~ m/organized/;
-            system("icd $irods_dir");
-            system("iput -T $image_name");
-            say $log_fh "  iput -T $image_name" unless $no_log;
-        }
-    }
+    system("imkdir -p $irods_dir");
+    my $irsync_cmd = "  irsync -r $organized_dir i:$irods_dir";
+    system($irsync_cmd);
+    say $log_fh $irsync_cmd;
 }
 
 exit;
