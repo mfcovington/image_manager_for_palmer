@@ -64,6 +64,7 @@ make_path($log_dir);
 open my $log_fh, ">>", "$log_dir/image_transfer.log";
 say $log_fh "▼ STARTING - " . localtime();
 
+$format =~ s|^\.+||;
 my @images;
 find( sub { push @images, $File::Find::name if /\.$format$/ },
     $autotransfer_dir );
