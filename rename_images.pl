@@ -69,10 +69,8 @@ my @images;
 find( sub { push @images, $File::Find::name if /\.$format$/ },
     $autotransfer_dir );
 
-if ( scalar @images > 0 ) {
-    rename_images(@images);
-    upload_to_iplant();
-}
+rename_images(@images) if scalar @images > 0;
+upload_to_irods();
 
 say $log_fh "- FINISHED - " . localtime();
 close $log_fh;
@@ -121,7 +119,7 @@ sub is_light {
     return 1 if shift > $mEV_threshold;
 }
 
-sub upload_to_iplant {
+sub upload_to_irods {
     system("imkdir -p $irods_dir");
     my $irsync_cmd = "  irsync -r $organized_dir i:$irods_dir";
     system($irsync_cmd);
