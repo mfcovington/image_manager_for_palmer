@@ -22,6 +22,7 @@ my $autotransfer_dir = "/Volumes/Humperdink/auto_transfer/";
 my $log_dir          = "/Volumes/Humperdink/";
 my $irods_dir        = "/iplant/home/shared/ucd.brassica/raw.data/NAM_images/";
 my $format           = "CR2";
+my $keep_rot;
 my $help;
 my $options = GetOptions(
     "dawn=i"             => \$dawn,
@@ -31,6 +32,7 @@ my $options = GetOptions(
     "log_dir=s"          => \$log_dir,
     "irods_dir=s"        => \$irods_dir,
     "format=s"           => \$format,
+    "keep_rotation"      => \$keep_rot;
     "help"               => \$help,
 );
 
@@ -48,6 +50,7 @@ my $usage = <<EOF;
         --irods_dir         Remote iRODS directory for syncing images
                               [$irods_dir]
         --format            Image file format [$format]
+        --keep_rotation     Don't reset 'Rotation' to 0 in exif data
         --help
 
 EOF
@@ -77,7 +80,9 @@ close $log_fh;
 
 sub rename_images {
     for my $image_name (@_) {
-        my $info_subset = ImageInfo(
+        my $exifTool = new Image::ExifTool;
+        $exifTool->SetNewValue('Resolution', 0) unless $keep_rot;
+        my $info_subset = $exifTool->ExtractInfo(
             $image_name, 'OwnerName', 'CreateDate', 'MeasuredEV',
             'FileType'
         );
