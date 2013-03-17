@@ -43,7 +43,7 @@ my $usage = <<EOF;
         --dawn              Time of lights-on [$dawn]
         --daylength         Daylength in hours [$daylength]
         --mEV_threshold     Threshold for blank/black images [$mEV_threshold]
-        --autotransfer_dir  Directory containing inages transfered from camera
+        --autotransfer_dir  Directory containing images transfered from camera
                               [$autotransfer_dir]
         --log_dir           Directory to write the log file
                               [$log_dir]
