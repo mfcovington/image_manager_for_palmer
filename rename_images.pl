@@ -81,8 +81,9 @@ close $log_fh;
 sub rename_images {
     for my $image_name (@_) {
         my $exifTool = new Image::ExifTool;
-        $exifTool->SetNewValue('Resolution', 0) unless $keep_rot;
-        my $info_subset = $exifTool->ExtractInfo(
+        $exifTool->SetNewValue('Rotation', 0) unless $keep_rot;
+        $exifTool->SetNewValue('Orientation', 'Horizontal (normal)') unless $keep_rot;
+        my $info_subset = ImageInfo(
             $image_name, 'OwnerName', 'CreateDate', 'MeasuredEV',
             'FileType'
         );
