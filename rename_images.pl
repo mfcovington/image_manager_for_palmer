@@ -32,7 +32,7 @@ my $options = GetOptions(
     "log_dir=s"          => \$log_dir,
     "irods_dir=s"        => \$irods_dir,
     "format=s"           => \$format,
-    "keep_rotation"      => \$keep_rot;
+    "keep_rotation"      => \$keep_rot,
     "help"               => \$help,
 );
 
