@@ -108,6 +108,7 @@ sub rename_images {
         my $new_path = $out_dir . $image_name_new;
         move( $image_name, $new_path )
           and ( say $log_fh "  mv $image_name $new_path" );
+        $exifTool->WriteInfo($new_path);
     }
 }
 
